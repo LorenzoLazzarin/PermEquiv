@@ -83,12 +83,43 @@ Qed.
 (** Questão 1 *)
 Lemma perm_to_permutation: forall l l', perm l l' -> permutation l l'.
 Proof.
-Admitted.
+  induction l.
+  - unfold permutation.
+    intro a.
+    reflexivity.
+  - unfold permutation in *.
+    simpl in *.
+    intro a.
+    destruct (a=?x); specialize (IHperm a); rewrite IHperm; reflexivity.
+  - unfold permutation in *.
+    simpl.
+    intro a.
+    destruct (a =?x); destruct (a=? y); specialize (IHperm a); rewrite IHperm; reflexivity.
+  - unfold permutation in *.
+    intro a.
+    specialize (IHperml a).
+    specialize (IHperm2 a).
+    rewrite IHperml.
+    apply IHperm2.
+Qed.
 
 (** Questão 2 *)
 Lemma permutation_nil: forall l, permutation nil l -> l = nil.
 Proof.
-Admitted.
+  induction l.
+  - unfold permutation.
+    intro a.
+    reflexivity.
+  - unfold permutation in *.
+    simpl in *.
+    intro b.
+    specialize (b a) .
+    destruct (a =? a) eqn:HEa in b .
+    * apply Nat.neq_0_succ in b.
+      contradiction.
+    * rewrite Nat.eqb_refl in HEa.
+      inversion HEa.
+Qed.
 
 Lemma permutation_sym: forall l l', permutation l l' -> permutation l' l.
 Proof.
@@ -169,19 +200,71 @@ Qed.
 
 (** Questão 3 *)
 Lemma num_occ_cons: forall l x n, num_oc x l = S n -> exists l1 l2, l = l1 ++ x :: l2 /\ num_oc x (l1 ++ l2) = n.
-Proof.
-Admitted.
+Proof.n
+intros.
+induction l.
+-exists nil.
+  simpl in H.
+  inversion H.
+- simpl in H.
+  destruct (x=?a) eqn:xeq.
+  --
+  exists nil.
+  exists l.
+  simpl.
+  split.
+    ---
+    simpl.
+    Search( _ ?= _).
+    rewrite Nat.eqb_eq in xeq.
+    rewrite xeq.
+    reflexivity.
+    ---inversion H.
+    reflexivity.
+  --rewrite H in IHl.
+  destruct IHl.
+    ----reflexivity.
+    ----exists (a::x0).
+    destruct H0.
+    exists x1.
+    split.
+      -----
+      destruct H0.
+      rewrite H0.
+      reflexivity.
+      -----
+      destruct H0.
+      simpl.
+      rewrite xeq.
+      apply H1.
+Qed.
 
 (** Questão 4 *)
 Lemma permutation_to_perm: forall l l', permutation l l' -> perm l l'.
 Proof.
- induction l.
- - admit.
- - intros l' Hequiv.
-   generalize dependent a.
-   generalize dependent l.
-   case l'.
-   + Admitted.
+  induction l.
+ - intros.
+   apply permutation_nil in H.
+   rewrite H.
+   apply perm_refl.
+ - intros.
+  assert (L := H).
+  unfold permutation in L.
+  specialize (L a).
+  simpl in L.
+rewrite Nat.eqb_refl in L.
+symmetry in L.
+apply num_occ_cons in L.
+destruct L. 
+destruct H0.
+destruct H0.
+assert(L1:=IHl).
+(*unfold permutation in IHl.*)
+specialize (IHl (x++x0)).
+rewrite H0.
+apply (perm_trans (a :: l) (a :: x ++ x0) (x ++ a :: x0) ).
+apply perm_hd.
+Qed.
 
 Theorem perm_equiv: forall l l', perm l l' <-> permutation l l'.
 Proof.
